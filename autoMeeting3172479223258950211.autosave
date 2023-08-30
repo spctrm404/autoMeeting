@@ -1,0 +1,118 @@
+// check list is loaded;
+// get first button coord;
+// click a button;
+// check window is opened;
+// get window`s top-left coord;
+// check content is loaded;
+// click scroll target;
+// scroll to end;
+// click method;
+// click category;
+// click category item;
+// click privacy;
+// click date;
+// click month;
+// click month item;
+// click day;
+// click close;
+// click time;
+// click time item;
+// click job;
+// click describe;
+// paste describe;
+// click submit;
+// check next button exist;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.awt.Color;
+import java.awt.MouseInfo;
+import java.awt.Point;
+import java.awt.Robot;
+import java.awt.Toolkit;
+Robot r;
+
+int[] zero = {2560, 0};
+int[] size = {1920, 1080};
+
+void setup() {
+  size(300, 300);
+  try {
+    r = new Robot();
+    r.setAutoDelay(1);
+  }
+  catch(Exception e) {
+    e.printStackTrace();
+  }
+  delay(500);
+  //frameRate(2);
+}
+
+void draw() {
+  println(cycle());
+}
+
+String cycle() {
+  if (findColorArea("fd5320", 2, 2) == null) return "리스트가 로딩 중입니다";
+  return "리스트가 로딩되었습니다.";
+}
+
+int[] hexToRgb(String hex) {
+  hex = hex.replace("#", ""); // "#" 문자 제거
+  int r = Integer.parseInt(hex.substring(0, 2), 16);
+  int g = Integer.parseInt(hex.substring(2, 4), 16);
+  int b = Integer.parseInt(hex.substring(4, 6), 16);
+  return new int[]{r, g, b};
+}
+
+int[] findColor(String hex) {
+  int[] rgb = hexToRgb(hex);
+  for (int y = zero[1]; y < zero[1] + size[1]; y++) {
+    for (int x = zero[0]; x < zero[0] + size[0]; x++) {
+      Color c = r.getPixelColor(x, y);
+      if (c.getRed() == rgb[0]
+        && c.getGreen() == rgb[1]
+        && c.getBlue() == rgb[2]) {
+        return new int[]{x, y};
+      }
+    }
+  }
+  return null;
+}
+
+int[] findColorArea(String hex, int areaWidth, int areaHeight) {
+  int[] rgb = hexToRgb(hex);
+  println("a");
+  for (int y = zero[1]; y < zero[1] + size[1]; y++) {
+    for (int x = zero[0]; x < zero[0] + size[0]; x++) {
+      Color c = r.getPixelColor(x, y);
+        println(c.getRed());
+        println(c.getGreen());
+        println(c.getBlue());
+      
+      if (c.getRed() == rgb[0]
+        && c.getGreen() == rgb[1]
+        && c.getBlue() == rgb[2]) {
+
+        boolean isArea = true;
+        for (int checkY = y + 1; checkY < y + areaHeight; checkY++) {
+          for (int checkX = x + 1; checkX < x + areaWidth; checkX++) {
+            c = r.getPixelColor(x, y);
+            if (c.getRed() != rgb[0]
+              || c.getGreen() != rgb[1]
+              || c.getBlue() != rgb[2]) {
+              isArea = false;
+              break;
+            }
+          }
+          if (!isArea) break;
+        }
+        println("d");
+        if (isArea) return new int[]{x, y};
+      }
+    }
+  }
+  println("b");
+  return null;
+}
