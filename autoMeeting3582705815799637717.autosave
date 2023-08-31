@@ -1,0 +1,200 @@
+String[] stepDescription = {
+  "0 check list is loaded",
+  "1 get button coord",
+  "2 click a button",
+  "3 check window is opened",
+  "4 check content is loaded",
+  "5 get scroll target coord",
+  "6 click scroll target",
+  "7 scroll to end",
+  "8 click category",
+  "9 click category item",
+  "10 click privacy",
+  "11 click date",
+  "12 click month",
+  "13 click month item",
+  "14 click day",
+  "15 click close",
+  "16 click time",
+  "17 click time item",
+  "18 click job",
+  "19 click describe",
+  "20 paste describe",
+  "21 click submit",
+  "check next button exist"
+};
+int[][] relCoords = {
+  {0, 55},
+  {0, 55},
+  {0, 55},
+  {0, 55},
+  {0, 55},
+  {0, 55},
+  {0, 55},
+  {0, 55},
+};
+int step = 0;
+void printStep() {
+  println(stepDescription[step]);
+}
+void addStep() {
+  print("DONE: ");
+  printStep();
+  step++;
+}
+void decStep() {
+  print("ERROR: ");
+  printStep();
+  step--;
+}
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
+import java.awt.Color;
+import java.awt.MouseInfo;
+import java.awt.Point;
+import java.awt.Rectangle;
+import java.awt.Robot;
+import java.awt.Toolkit;
+import java.util.HashMap;
+Robot r;
+
+int[] zero = {2560, 0};
+int[] size = {1920, 1080};
+
+void setup() {
+  size(300, 300);
+  try {
+    r = new Robot();
+    r.setAutoDelay(1);
+  }
+  catch(Exception e) {
+    e.printStackTrace();
+  }
+  delay(500);
+  frameRate(2);
+}
+
+void draw() {
+  cycle();
+}
+
+int[] coord = null;
+
+void cycle() {
+  if (step == 0) {
+    if (findColorArea("fd5320", 4, 4) == null) {
+      print("DOING: ");
+      printStep();
+    } else {
+      addStep();
+    }
+  } else if (step == 1) {
+    if (findColorArea("fd5320", 4, 4) != null) {
+      print("DOING: ");
+      printStep();
+      coord = findColorArea("fd5320", 2, 2);
+      addStep();
+    }
+  } else if (step == 2) {
+    print("DOING: ");
+    printStep();
+    click(coord);
+    addStep();
+  } else if (step == 3) {
+    if (findColorArea("0f72ad", 8, 8) == null) {
+      print("DOING: ");
+      printStep();
+    } else {
+      addStep();
+    }
+  } else if (step == 4) {
+    if (findColorArea("1777fc", 3, 3) == null) {
+      print("DOING: ");
+      printStep();
+    } else {
+      addStep();
+    }
+  } else if (step == 5) {
+    print("DOING: ");
+    printStep();
+    coord = findColorArea("1777fc", 3, 3);
+    addStep();
+  } else if (step == 6) {
+    print("DOING: ");
+    printStep();
+    click(coord);
+    addStep();
+  } else if (step == 7) {
+    print("DOING: ");
+    printStep();
+    scrollToEnd();
+    addStep();
+  }
+}
+
+int[] hexToRgb(String hex) {
+  hex = hex.replace("#", ""); // "#" 문자 제거
+  int r = Integer.parseInt(hex.substring(0, 2), 16);
+  int g = Integer.parseInt(hex.substring(2, 4), 16);
+  int b = Integer.parseInt(hex.substring(4, 6), 16);
+  return new int[]{r, g, b};
+}
+
+int[] findColor(String hex) {
+  int[] rgb = hexToRgb(hex);
+  BufferedImage screenshot = r.createScreenCapture(new Rectangle(zero[0], zero[1], size[0], size[1]));
+  for (int y = 0; y < size[1]; y++) {
+    for (int x = 0; x < size[0]; x++) {
+      Color c = new Color(screenshot.getRGB(x, y));
+      if (c.getRed() == rgb[0]
+        && c.getGreen() == rgb[1]
+        && c.getBlue() == rgb[2]) {
+        return new int[]{x + zero[0], y + zero[1]};
+      }
+    }
+  }
+  return null;
+}
+
+int[] findColorArea(String hex, int areaWidth, int areaHeight) {
+  int[] rgb = hexToRgb(hex);
+  BufferedImage screenshot = r.createScreenCapture(new Rectangle(zero[0], zero[1], size[0], size[1]));
+  for (int y = 0; y < size[1]; y++) {
+    for (int x = 0; x < size[0]; x++) {
+      Color c = new Color(screenshot.getRGB(x, y));
+      if (c.getRed() == rgb[0]
+        && c.getGreen() == rgb[1]
+        && c.getBlue() == rgb[2]) {
+        boolean isArea = true;
+        for (int checkY = y + 1; checkY < y + areaHeight; checkY++) {
+          for (int checkX = x + 1; checkX < x + areaWidth; checkX++) {
+            c = new Color(screenshot.getRGB(checkX, checkY));
+            if (c.getRed() != rgb[0]
+              || c.getGreen() != rgb[1]
+              || c.getBlue() != rgb[2]) {
+              isArea = false;
+              break;
+            }
+          }
+          if (!isArea) break;
+        }
+        if (isArea) return new int[]{x + zero[0], y + zero[1]};
+      }
+    }
+  }
+  return null;
+}
+
+void click(int[] coord) {
+  r.mouseMove(coord[0], coord[1]);
+  r.mousePress(InputEvent.BUTTON1_MASK);
+  r.mouseRelease(InputEvent.BUTTON1_MASK);
+}
+
+void scrollToEnd() {
+  r.keyPress(KeyEvent.VK_END);
+  r.keyRelease(KeyEvent.VK_END);
+}
